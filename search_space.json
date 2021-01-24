@@ -1,0 +1,15 @@
+{
+    "batch_size": {"_type":"choice", "_value": [32,64]},
+    "lr":{"_type":"loguniform","_value":[0.0001, 0.1]},
+    "momentum":{"_type":"uniform","_value":[0, 1]},
+	"t":{"_type":"randint","_value":[4, 8]},
+	"c1":{"_type":"randint","_value":[16, 32]},
+	"c2":{"_type":"randint","_value":[32, 64]},
+	"c3":{"_type":"randint","_value":[64, 128]},
+	"c4":{"_type":"randint","_value":[128, 256]},
+	"c5":{"_type":"randint","_value":[256, 512]},
+	"n1":{"_type":"randint","_value":[2, 5]},
+	"n2":{"_type":"randint","_value":[2, 5]},
+	"n3":{"_type":"randint","_value":[2, 5]},
+	"n4":{"_type":"randint","_value":[2, 5]}
+}
