@@ -54,8 +54,9 @@ Model designed to recognize a number with two digits, require by the CADC compet
     ```
     $ python convert_to_lmdb.py --data_dir ./data
     ```
+    Please note that I have cut picture to 2 digits, resize them to 54*54 and suppressed all pictures small than 54*54, you may make changes in order to meet your requirement.
 
-1. (Optional) Test for reading LMDBs
+2. (Optional) Test for reading LMDBs
 
     ```
     Open `read_lmdb_sample.ipynb` in Jupyter
