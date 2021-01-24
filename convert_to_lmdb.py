@@ -6,13 +6,14 @@ import random
 import h5py
 import lmdb
 import numpy as np
+import matplotlib.pyplot as plt 
+#%matplotlib inline
 from PIL import Image
 
 import example_pb2
 from meta import Meta
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--data_dir', default='./data', help='directory to SVHN (format 1) folders and write the converted files')
+import cv2
 
 
 class ExampleReader(object):
@@ -29,6 +30,7 @@ class ExampleReader(object):
         attrs = {}
         f = digit_struct_mat_file
         item = f['digitStruct']['bbox'][index].item()
+        #第index行就是index号图片
         for key in ['label', 'left', 'top', 'width', 'height']:
             attr = f[item][key]
             values = [f[attr[i].item()][0][0]
@@ -43,7 +45,7 @@ class ExampleReader(object):
                                                                     int(round(bbox_width * 1.3)),
                                                                     int(round(bbox_height * 1.3)))
         image = image.crop([cropped_left, cropped_top, cropped_left + cropped_width, cropped_top + cropped_height])
-        image = image.resize([64, 64])
+        image = image.resize([54, 54])
         return image
 
     def read_and_convert(self, digit_struct_mat_file):
@@ -53,17 +55,18 @@ class ExampleReader(object):
         if self._example_pointer == self._num_examples:
             return None
         path_to_image_file = self._path_to_image_files[self._example_pointer]
-        index = int(path_to_image_file.split('/')[-1].split('.')[0][-1]) - 1
+        #print(path_to_image_file)
+        index = int(path_to_image_file.split('\\')[-1].split('.')[0]) - 1#取出图片编号
         self._example_pointer += 1
 
         attrs = ExampleReader._get_attrs(digit_struct_mat_file, index)
         label_of_digits = attrs['label']
         length = len(label_of_digits)
-        if length > 5:
+        if not length==2:
             # skip this example
             return self.read_and_convert(digit_struct_mat_file)
 
-        digits = [10, 10, 10, 10, 10]   # digit 10 represents no digit
+        digits = [10, 10]   # digit 10 represents no digit
         for idx, label_of_digit in enumerate(label_of_digits):
             digits[idx] = int(label_of_digit if label_of_digit != 10 else 0)    # label 10 is essentially digit zero
 
@@ -80,8 +83,15 @@ class ExampleReader(object):
                                                         max_side,
                                                         max_side)
         image = np.array(ExampleReader._preprocess(Image.open(path_to_image_file), bbox_left, bbox_top, bbox_width, bbox_height)).tobytes()
-
+        #image = np.array(ExampleReader._preprocess(Image.open(path_to_image_file), bbox_left, bbox_top, bbox_width, bbox_height))
+        if bbox_width<=54 and bbox_height<=54:
+            return self.read_and_convert(digit_struct_mat_file)
+        
         example = example_pb2.Example()
+        
+        #plt.imshow(image)
+        #plt.show()
+        #print(digits)
         example.image = image
         example.length = length
         example.digits.extend(digits)
@@ -100,6 +110,8 @@ def convert_to_lmdb(path_to_dataset_dir_and_digit_struct_mat_file_tuples,
     for path_to_dataset_dir, path_to_digit_struct_mat_file in path_to_dataset_dir_and_digit_struct_mat_file_tuples:
         path_to_image_files = glob.glob(os.path.join(path_to_dataset_dir, '*.png'))
         total_files = len(path_to_image_files)
+        #print(path_to_image_files)
+        
         print('%d files found in %s' % (total_files, path_to_dataset_dir))
 
         with h5py.File(path_to_digit_struct_mat_file, 'r') as digit_struct_mat_file:
@@ -142,21 +154,21 @@ def create_lmdb_meta_file(num_train_examples, num_val_examples, num_test_example
     meta.save(path_to_lmdb_meta_file)
 
 
-def main(args):
-    path_to_train_dir = os.path.join(args.data_dir, 'train')
-    path_to_test_dir = os.path.join(args.data_dir, 'test')
-    path_to_extra_dir = os.path.join(args.data_dir, 'extra')
+def main():
+    path_to_train_dir = 'D:\\libtorch\\test\\SVHNClassifier-PyTorch-master\\data\\train\\'
+    path_to_test_dir = 'D:\\libtorch\\test\\SVHNClassifier-PyTorch-master\\data\\test\\'
+    path_to_extra_dir = 'D:\\libtorch\\test\\SVHNClassifier-PyTorch-master\\data\\extra\\'
     path_to_train_digit_struct_mat_file = os.path.join(path_to_train_dir, 'digitStruct.mat')
     path_to_test_digit_struct_mat_file = os.path.join(path_to_test_dir, 'digitStruct.mat')
     path_to_extra_digit_struct_mat_file = os.path.join(path_to_extra_dir, 'digitStruct.mat')
 
-    path_to_train_lmdb_dir = os.path.join(args.data_dir, 'train.lmdb')
-    path_to_val_lmdb_dir = os.path.join(args.data_dir, 'val.lmdb')
-    path_to_test_lmdb_dir = os.path.join(args.data_dir, 'test.lmdb')
-    path_to_lmdb_meta_file = os.path.join(args.data_dir, 'lmdb_meta.json')
+    path_to_train_lmdb_dir = os.path.join('D:/libtorch/test/SVHNClassifier-PyTorch-master/data1', 'train.lmdb')
+    path_to_val_lmdb_dir = os.path.join('D:/libtorch/test/SVHNClassifier-PyTorch-master/data1', 'val.lmdb')
+    path_to_test_lmdb_dir = os.path.join('D:/libtorch/test/SVHNClassifier-PyTorch-master/data1', 'test.lmdb')
+    path_to_lmdb_meta_file = os.path.join('D:/libtorch/test/SVHNClassifier-PyTorch-master/data1', 'lmdb_meta.json')
 
-    for path_to_dir in [path_to_train_lmdb_dir, path_to_val_lmdb_dir, path_to_test_lmdb_dir]:
-        assert not os.path.exists(path_to_dir), 'LMDB directory %s already exists' % path_to_dir
+    #for path_to_dir in [path_to_train_lmdb_dir, path_to_val_lmdb_dir, path_to_test_lmdb_dir]:
+        #assert not os.path.exists(path_to_dir), 'LMDB directory %s already exists' % path_to_dir
 
     print('Processing training and validation data...')
     [num_train_examples, num_val_examples] = convert_to_lmdb([(path_to_train_dir, path_to_train_digit_struct_mat_file),
@@ -174,4 +186,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(parser.parse_args())
+    main()
