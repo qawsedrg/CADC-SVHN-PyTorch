@@ -61,6 +61,10 @@ Model designed to recognize a number with two digits, require by the CADC compet
     ```
     Open `read_lmdb_sample.ipynb` in Jupyter
     ```
+    
+## Download the converted and processed  lmdb dataset 
+
+链接: https://pan.baidu.com/s/1Q7d1BrFzn7l5eLAnD8ckyQ  密码: owdc
 
 ## Train, test and convert to .pt
 
