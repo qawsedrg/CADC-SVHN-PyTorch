@@ -58,9 +58,7 @@ Model designed to recognize a number with two digits, require by the CADC compet
 
 2. (Optional) Test for reading LMDBs
 
-    ```
     Open `read_lmdb_sample.ipynb` in Jupyter
-    ```
     
 ## Download the converted and processed  lmdb dataset 
 
