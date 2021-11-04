@@ -1,6 +1,6 @@
 # CADC-SVHN-PyTorch
 
-Model designed to recognize a number with two digits, require by the CADC competition, trained on SVHN dataset, implemented using PyTorch.
+Model designed to recognize a number with two digits, trained on SVHN dataset, implemented using PyTorch. Automatic parameter searching using NNI. 
 
 ## Requirements
 
